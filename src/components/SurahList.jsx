@@ -86,7 +86,7 @@ export default function SurahList({ onPick }) {
               tabIndex={0}
               className={`surah-item ${playing ? 'playing' : ''} ${!playingId && pageSurah === s.id ? 'current' : ''}`}
               onClick={() => {
-                dispatch(playSurah({ surahId: s.id }));
+                dispatch(playSurah({ surahId: s.id, autoplay: false }));
                 onPick?.();
               }}
               onKeyDown={(e) => e.key === 'Enter' && e.currentTarget.click()}

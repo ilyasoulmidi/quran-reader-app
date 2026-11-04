@@ -61,7 +61,7 @@ export default function PlayerBar() {
     a.src = track.url;
     a.playbackRate = isRadio ? 1 : p.rate;
     a.load();
-    a.play().catch(() => dispatch(setPlaying(false)));
+    if (track.autoplay !== false) a.play().catch(() => dispatch(setPlaying(false)));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [track?.nonce]);
 
@@ -113,7 +113,7 @@ export default function PlayerBar() {
       audioRef.current.currentTime = 0;
       audioRef.current.play();
     } else if (p.repeat === 'next') {
-      dispatch(skip(1));
+      dispatch(skip(1, true));
     } else {
       dispatch(setPlaying(false));
     }

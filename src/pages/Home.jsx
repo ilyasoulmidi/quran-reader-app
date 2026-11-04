@@ -51,7 +51,7 @@ export default function Home() {
   }, [dispatch]);
 
   const listen = (id) => {
-    dispatch(playSurah({ surahId: id }));
+    dispatch(playSurah({ surahId: id, autoplay: false }));
     navigate('/mushaf');
   };
 

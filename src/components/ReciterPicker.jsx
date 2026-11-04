@@ -38,7 +38,8 @@ export default function ReciterPicker({ compact = false }) {
     const ayah = selectActiveAyah(state)?.ayah;
     dispatch(setRead(r.id));
     // Si une sourate est en cours : on la relance avec le nouveau récitateur, au même verset
-    if (track?.kind === 'surah') dispatch(playSurah({ surahId: track.id, ayah: ayah || undefined, movePage: false }));
+    if (track?.kind === 'surah')
+      dispatch(playSurah({ surahId: track.id, ayah: ayah || undefined, movePage: false, autoplay: state.player.isPlaying }));
   };
 
   return (

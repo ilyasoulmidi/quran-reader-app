@@ -14,9 +14,10 @@ export function selectActiveAyah(state) {
 
 /**
  * Lance une sourate avec le récitateur choisi.
- * @param {{surahId:number, ayah?:number, movePage?:boolean}} opts
+ * @param {{surahId:number, ayah?:number, movePage?:boolean, autoplay?:boolean}} opts
+ * autoplay=false : la sourate est chargée, le son démarre quand on appuie sur lecture.
  */
-export const playSurah = ({ surahId, ayah, movePage = true }) => async (dispatch, getState) => {
+export const playSurah = ({ surahId, ayah, movePage = true, autoplay = true }) => async (dispatch, getState) => {
   if (getState().quran.readsStatus !== 'succeeded') await dispatch(fetchReads());
   const { quran } = getState();
   const read = quran.reads.find((r) => r.id === quran.readId) || quran.reads[0];
@@ -38,20 +39,23 @@ export const playSurah = ({ surahId, ayah, movePage = true }) => async (dispatch
   }
   dispatch(setFollow(true));
   dispatch(
-    playTrack({ kind: 'surah', id: surahId, readId: read.id, url: surahAudioUrl(read.folder_url, surahId), startAt })
+    playTrack({ kind: 'surah', id: surahId, readId: read.id, url: surahAudioUrl(read.folder_url, surahId), startAt, autoplay })
   );
 };
 
 export const playRadio = (radio) =>
   playTrack({ kind: 'radio', id: radio.id, url: radio.url, title: radio.name });
 
-/** Piste suivante (+1) ou précédente (-1) : sourate ou radio selon ce qui joue. */
-export const skip = (dir) => (dispatch, getState) => {
-  const { track } = getState().player;
+/**
+ * Piste suivante (+1) ou précédente (-1) : sourate ou radio selon ce qui joue.
+ * La lecture continue seulement si elle était déjà en cours (ou si forcePlay).
+ */
+export const skip = (dir, forcePlay) => (dispatch, getState) => {
+  const { track, isPlaying } = getState().player;
   if (!track) return;
   if (track.kind === 'surah') {
     const next = ((track.id - 1 + dir + TOTAL_SURAHS) % TOTAL_SURAHS) + 1;
-    dispatch(playSurah({ surahId: next }));
+    dispatch(playSurah({ surahId: next, autoplay: forcePlay ?? isPlaying }));
   } else {
     const { radios } = getState().radio;
     if (!radios.length) return;

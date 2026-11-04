@@ -22,9 +22,11 @@ const playerSlice = createSlice({
   },
   reducers: {
     playTrack: (state, action) => {
-      state.track = { ...action.payload, nonce: Date.now() + Math.random() };
-      state.isPlaying = true;
-      state.buffering = true;
+      // autoplay: false -> la piste est chargée mais attend que l'utilisateur appuie sur lecture
+      const autoplay = action.payload.autoplay !== false;
+      state.track = { ...action.payload, autoplay, nonce: Date.now() + Math.random() };
+      state.isPlaying = autoplay;
+      state.buffering = autoplay;
       state.error = false;
       state.currentTime = action.payload.startAt || 0;
       state.duration = 0;
