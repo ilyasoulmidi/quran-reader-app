@@ -1,12 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch, useSelector, useStore } from 'react-redux';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useT } from '../i18n';
 import {
-  cycleRepeat, requestSeek, setBuffering, setDuration, setError, setPlaying, setRate,
+  cycleRepeat, requestSeek, setBuffering, setDuration, setError, setNotice, setPlaying, setRate,
   setTime, setVolume, stop, togglePlay, toggleMute,
 } from '../store/playerSlice';
-import { selectActiveAyah, skip } from '../store/thunks';
+import { audioFailed, audioOk, selectActiveAyah, skip } from '../store/thunks';
 import {
   IconChevronDown, IconClose, IconMute, IconNext, IconPause, IconPlay, IconPrev, IconRepeat,
   IconVolume, Equalizer, Star8,
@@ -44,8 +44,10 @@ function useTrackInfo() {
 export default function PlayerBar() {
   const t = useT();
   const dispatch = useDispatch();
+  const store = useStore();
   const audioRef = useRef(null);
   const pendingStart = useRef(0);
+  const retries = useRef(0);
   const [expanded, setExpanded] = useState(false);
   const p = useSelector((s) => s.player);
   const activeAyah = useSelector(selectActiveAyah);
@@ -58,12 +60,38 @@ export default function PlayerBar() {
     const a = audioRef.current;
     if (!a || !track) return;
     pendingStart.current = track.startAt || 0;
+    retries.current = 0;
     a.src = track.url;
     a.playbackRate = isRadio ? 1 : p.rate;
     a.load();
     if (track.autoplay !== false) a.play().catch(() => dispatch(setPlaying(false)));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [track?.nonce]);
+
+  // Les messages informatifs disparaissent seuls
+  useEffect(() => {
+    if (!p.notice) return;
+    const id = setTimeout(() => dispatch(setNotice(null)), 4000);
+    return () => clearTimeout(id);
+  }, [p.notice, dispatch]);
+
+  // Flux en erreur : 2 nouvelles tentatives, puis abandon (radio suivante)
+  const onAudioError = () => {
+    const a = audioRef.current;
+    if (!track || !a) return;
+    if (retries.current < 2) {
+      retries.current += 1;
+      const nonce = track.nonce;
+      setTimeout(() => {
+        if (store.getState().player.track?.nonce !== nonce) return;
+        a.src = track.url;
+        a.load();
+        a.play().catch(() => {});
+      }, 1200);
+    } else {
+      dispatch(audioFailed());
+    }
+  };
 
   // Lecture / pause demandées depuis n'importe quel composant
   useEffect(() => {
@@ -130,7 +158,10 @@ export default function PlayerBar() {
       onPlay={() => dispatch(setPlaying(true))}
       onPause={() => dispatch(setPlaying(false))}
       onWaiting={() => dispatch(setBuffering(true))}
-      onPlaying={() => dispatch(setBuffering(false))}
+      onPlaying={() => {
+        dispatch(setBuffering(false));
+        dispatch(audioOk());
+      }}
       onCanPlay={() => dispatch(setBuffering(false))}
       onLoadedMetadata={(e) => {
         if (pendingStart.current) {
@@ -140,7 +171,7 @@ export default function PlayerBar() {
         dispatch(setDuration(e.currentTarget.duration));
       }}
       onTimeUpdate={(e) => dispatch(setTime(e.currentTarget.currentTime))}
-      onError={() => track && dispatch(setError(true))}
+      onError={onAudioError}
       onEnded={onEnded}
     />
   );
@@ -321,10 +352,20 @@ export default function PlayerBar() {
       </AnimatePresence>
 
       <AnimatePresence>
-        {p.error && (
-          <motion.div className="toast" initial={{ y: 30, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ opacity: 0 }}>
-            {t('audioError')}
-            <button className="icon-btn" onClick={() => dispatch(setError(false))} aria-label={t('close')}>
+        {(p.error || p.notice) && (
+          <motion.div
+            key={p.error ? 'error' : p.notice}
+            className={`toast ${p.error ? '' : 'info'}`}
+            initial={{ y: 30, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            {p.error ? t(track?.kind === 'radio' ? 'radioError' : 'audioError') : t(p.notice)}
+            <button
+              className="icon-btn"
+              onClick={() => (p.error ? dispatch(setError(false)) : dispatch(setNotice(null)))}
+              aria-label={t('close')}
+            >
               <IconClose size={16} />
             </button>
           </motion.div>

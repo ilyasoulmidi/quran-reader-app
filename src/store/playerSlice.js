@@ -11,6 +11,7 @@ const playerSlice = createSlice({
     isPlaying: false,
     buffering: false,
     error: false,
+    notice: null, // clé i18n d'un message temporaire
     currentTime: 0,
     duration: 0,
     volume: load('volume', 0.8),
@@ -48,6 +49,9 @@ const playerSlice = createSlice({
         state.buffering = false;
       }
     },
+    setNotice: (state, action) => {
+      state.notice = action.payload;
+    },
     setTime: (state, action) => {
       state.currentTime = action.payload;
     },
@@ -82,7 +86,7 @@ const playerSlice = createSlice({
 });
 
 export const {
-  playTrack, setPlaying, togglePlay, setBuffering, setError, setTime, setDuration,
+  playTrack, setPlaying, togglePlay, setBuffering, setError, setNotice, setTime, setDuration,
   setVolume, toggleMute, setRate, cycleRepeat, requestSeek, stop,
 } = playerSlice.actions;
 export default playerSlice.reducer;

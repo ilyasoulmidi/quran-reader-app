@@ -1,6 +1,7 @@
 import { surahAudioUrl, TOTAL_SURAHS } from '../api';
 import { fetchReads, fetchTiming, setFollow, setPage } from './quranSlice';
-import { playTrack } from './playerSlice';
+import { playTrack, setError, setNotice } from './playerSlice';
+import { markBroken, unmarkBroken } from './radioSlice';
 
 /** Verset en cours de récitation (ou null). */
 export function selectActiveAyah(state) {
@@ -57,9 +58,44 @@ export const skip = (dir, forcePlay) => (dispatch, getState) => {
     const next = ((track.id - 1 + dir + TOTAL_SURAHS) % TOTAL_SURAHS) + 1;
     dispatch(playSurah({ surahId: next, autoplay: forcePlay ?? isPlaying }));
   } else {
-    const { radios } = getState().radio;
+    const { radios, broken } = getState().radio;
     if (!radios.length) return;
     const i = radios.findIndex((r) => r.id === track.id);
-    dispatch(playRadio(radios[(i + dir + radios.length) % radios.length]));
+    // on saute les radios déjà signalées comme indisponibles
+    for (let k = 1; k <= radios.length; k++) {
+      const r = radios[(((i + dir * k) % radios.length) + radios.length) % radios.length];
+      if (!broken.includes(r.id) || k === radios.length) {
+        dispatch(playRadio(r));
+        break;
+      }
+    }
+  }
+};
+
+let autoSkips = 0;
+
+/** Lecture réussie : réinitialise le compteur de radios sautées. */
+export const audioOk = () => (dispatch, getState) => {
+  autoSkips = 0;
+  const { track } = getState().player;
+  if (track?.kind === 'radio' && getState().radio.broken.includes(track.id)) dispatch(unmarkBroken(track.id));
+};
+
+/**
+ * Échec définitif du flux (après les nouvelles tentatives du lecteur).
+ * Radio : on la marque indisponible et on passe automatiquement à la suivante.
+ */
+export const audioFailed = () => (dispatch, getState) => {
+  const { track } = getState().player;
+  if (!track) return;
+  if (track.kind === 'radio' && autoSkips < 5) {
+    autoSkips += 1;
+    dispatch(markBroken(track.id));
+    dispatch(skip(1, true));
+    dispatch(setNotice('radioSkipped'));
+  } else {
+    if (track.kind === 'radio') dispatch(markBroken(track.id));
+    autoSkips = 0;
+    dispatch(setError(true));
   }
 };

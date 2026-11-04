@@ -1835,9 +1835,25 @@ html[lang='ar'] .hero-title {
 .radio-name {
   flex: 1;
   min-width: 0;
+  display: flex;
+  flex-direction: column;
   font-size: 14px;
   font-weight: 600;
   line-height: 1.45;
+}
+
+.radio-off {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.radio-card.broken {
+  opacity: 0.45;
+}
+
+.radio-card.broken .radio-avatar {
+  filter: grayscale(1);
 }
 
 .radio-actions {
@@ -2302,6 +2318,17 @@ html[lang='ar'] .hero-title {
   background: rgba(185, 28, 28, 0.92);
   box-shadow: var(--shadow);
   max-width: calc(100% - 32px);
+}
+
+.toast.info {
+  background: color-mix(in srgb, var(--bg-2) 92%, transparent);
+  color: var(--text);
+  border: 1px solid var(--border-strong);
+}
+
+.toast.info .icon-btn {
+  color: var(--text);
+  background: var(--surface-2);
 }
 
 .toast .icon-btn {

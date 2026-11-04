@@ -13,7 +13,7 @@ const cleanName = (n) => n.replace(/^(إذاعة|اذاعة|Radio)\s*/i, '');
 export default function Radio() {
   const t = useT();
   const dispatch = useDispatch();
-  const { radios, status, favorites } = useSelector((s) => s.radio);
+  const { radios, status, favorites, broken } = useSelector((s) => s.radio);
   const lang = useSelector((s) => s.ui.lang);
   const track = useSelector((s) => s.player.track);
   const isPlaying = useSelector((s) => s.player.isPlaying);
@@ -90,10 +90,12 @@ export default function Radio() {
         {shown.map((r) => {
           const active = current?.id === r.id;
           const fav = favorites.includes(r.id);
+          const off = broken.includes(r.id) && !active;
           return (
             <div
               key={r.id}
-              className={`radio-card ${active ? 'active' : ''}`}
+              className={`radio-card ${active ? 'active' : ''} ${off ? 'broken' : ''}`}
+              title={off ? t('unavailable') : undefined}
               role="button"
               tabIndex={0}
               onClick={() => (active ? dispatch(togglePlay()) : dispatch(playRadio(r)))}
@@ -102,7 +104,10 @@ export default function Radio() {
               <span className="radio-avatar" style={{ '--h': (r.id * 37) % 360 }}>
                 {cleanName(r.name).charAt(0)}
               </span>
-              <span className="radio-name">{r.name}</span>
+              <span className="radio-name">
+                {r.name}
+                {off && <small className="radio-off">{t('unavailable')}</small>}
+              </span>
               <span className="radio-actions">
                 {active && isPlaying ? <Equalizer /> : <span className="mini-play"><IconPlay size={14} /></span>}
                 <button
