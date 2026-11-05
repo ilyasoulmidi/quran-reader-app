@@ -1,16 +1,23 @@
-import { NavLink, Link } from 'react-router-dom';
+import { NavLink, Link, useLocation } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { motion } from 'framer-motion';
 import { useT, LANGS } from '../i18n';
 import { setLang, toggleTheme } from '../store/uiSlice';
-import { IconBook, IconHome, IconMoon, IconRadio, IconSun, IconTv, Star8 } from './Icons';
+import { IconBeads, IconBook, IconHome, IconMoon, IconMosque, IconRadio, IconSun, Star8 } from './Icons';
 
+// « Radios » couvre aussi la page Direct (onglets en haut de la page).
 export const NAV = [
   { to: '/', key: 'home', icon: IconHome, end: true },
   { to: '/mushaf', key: 'mushaf', icon: IconBook },
-  { to: '/radio', key: 'radio', icon: IconRadio },
-  { to: '/live', key: 'live', icon: IconTv },
+  { to: '/prayer', key: 'prayer', icon: IconMosque },
+  { to: '/adhkar', key: 'adhkar', icon: IconBeads },
+  { to: '/radio', key: 'radio', icon: IconRadio, also: ['/live'] },
 ];
+
+function useIsActive() {
+  const { pathname } = useLocation();
+  return (item, isActive) => isActive || (item.also || []).some((p) => pathname.startsWith(p));
+}
 
 export function Logo() {
   const t = useT();
@@ -29,6 +36,7 @@ export default function Header() {
   const t = useT();
   const dispatch = useDispatch();
   const { theme, lang } = useSelector((s) => s.ui);
+  const activeFor = useIsActive();
 
   return (
     <header className="topbar">
@@ -36,11 +44,13 @@ export default function Header() {
         <Logo />
 
         <nav className="topnav" aria-label="Navigation">
-          {NAV.map(({ to, key, icon: Icon, end }) => (
-            <NavLink key={to} to={to} end={end} className="topnav-link">
+          {NAV.map((item) => {
+            const { to, key, icon: Icon, end } = item;
+            return (
+            <NavLink key={to} to={to} end={end} className={({ isActive }) => `topnav-link ${activeFor(item, isActive) ? 'active' : ''}`}>
               {({ isActive }) => (
                 <>
-                  {isActive && (
+                  {activeFor(item, isActive) && (
                     <motion.span layoutId="nav-pill" className="topnav-pill" transition={{ type: 'spring', stiffness: 420, damping: 34 }} />
                   )}
                   <Icon size={18} />
@@ -48,7 +58,8 @@ export default function Header() {
                 </>
               )}
             </NavLink>
-          ))}
+            );
+          })}
         </nav>
 
         <div className="topbar-actions">
@@ -78,19 +89,23 @@ export default function Header() {
 
 export function BottomNav() {
   const t = useT();
+  const activeFor = useIsActive();
   return (
     <nav className="bottomnav" aria-label="Navigation">
-      {NAV.map(({ to, key, icon: Icon, end }) => (
-        <NavLink key={to} to={to} end={end} className="bottomnav-link">
+      {NAV.map((item) => {
+        const { to, key, icon: Icon, end } = item;
+        return (
+        <NavLink key={to} to={to} end={end} className={({ isActive }) => `bottomnav-link ${activeFor(item, isActive) ? 'active' : ''}`}>
           {({ isActive }) => (
             <>
-              {isActive && <motion.span layoutId="bnav-pill" className="bottomnav-pill" transition={{ type: 'spring', stiffness: 420, damping: 34 }} />}
+              {activeFor(item, isActive) && <motion.span layoutId="bnav-pill" className="bottomnav-pill" transition={{ type: 'spring', stiffness: 420, damping: 34 }} />}
               <Icon size={22} />
               <span>{t(key)}</span>
             </>
           )}
         </NavLink>
-      ))}
+        );
+      })}
     </nav>
   );
 }

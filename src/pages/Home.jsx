@@ -7,8 +7,14 @@ import { TOTAL_AYAT, TOTAL_PAGES, TOTAL_SURAHS } from '../api';
 import { fetchReads } from '../store/quranSlice';
 import { playSurah } from '../store/thunks';
 import {
-  IconArrow, IconBook, IconLayers, IconMic, IconPlay, IconRadio, IconTv, Star8,
+  IconArrow, IconBeads, IconBook, IconLayers, IconMic, IconMoon, IconMosque, IconPin, IconPlay, IconRadio, IconSun, Star8,
 } from '../components/Icons';
+import { usePrayerTimes } from '../hooks/usePrayerTimes';
+import { PRAYER_ICONS } from './Prayer';
+import { locationLabel } from '../components/LocationPicker';
+import { defaultAdhkarKind, loadProgress } from './Adhkar';
+import { MORNING, EVENING } from '../data/adhkar';
+import { fmtCountdown } from '../time';
 
 const POPULAR = [1, 18, 36, 55, 56, 67, 2, 112];
 
@@ -65,8 +71,9 @@ export default function Home() {
 
   const features = [
     { to: '/mushaf', icon: IconBook, title: t('fMushafT'), desc: t('fMushafD'), tone: 'emerald' },
-    { to: '/radio', icon: IconRadio, title: t('fRadioT'), desc: t('fRadioD', { n: radios.length || 100 }), tone: 'gold' },
-    { to: '/live', icon: IconTv, title: t('fLiveT'), desc: t('fLiveD'), tone: 'sky' },
+    { to: '/prayer', icon: IconMosque, title: t('fPrayerT'), desc: t('fPrayerD'), tone: 'sky' },
+    { to: '/adhkar', icon: IconBeads, title: t('fAdhkarT'), desc: t('fAdhkarD'), tone: 'gold' },
+    { to: '/radio', icon: IconRadio, title: t('fListenT'), desc: t('fListenD', { n: radios.length || 100 }), tone: 'rose' },
   ];
 
   return (
@@ -93,6 +100,11 @@ export default function Home() {
         <div className="hero-ornament" aria-hidden>
           <Star8 size={420} />
         </div>
+      </section>
+
+      <section className="today">
+        <PrayerWidget />
+        <AdhkarWidget />
       </section>
 
       <section className="stats">
@@ -166,6 +178,82 @@ export default function Home() {
         <Star8 size={22} /> <span>{t('footer')}</span>
       </footer>
     </div>
+  );
+}
+
+const FIVE = ['Fajr', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'];
+
+/** Carte « prochaine prière » avec compte à rebours. */
+function PrayerWidget() {
+  const t = useT();
+  const lang = useSelector((s) => s.ui.lang);
+  const pt = usePrayerTimes();
+  return (
+    <Link to="/prayer" className="today-card prayer-widget glass" data-aos="fade-up">
+      <div className="today-head">
+        <span className="today-ico sky-tone"><IconMosque size={18} /></span>
+        <div className="today-title">
+          <b>{t('prayerTitle')}</b>
+          <small><IconPin size={12} /> {locationLabel(pt.location, lang)}</small>
+        </div>
+        <IconArrow size={16} className="flip-rtl today-arrow" />
+      </div>
+      {pt.ready ? (
+        <>
+          <div className="pw-main">
+            <div>
+              <small className="muted">{t('nextPrayer')}</small>
+              <b className="pw-name">{t(pt.next.key.toLowerCase())} <span>{pt.next.time}</span></b>
+            </div>
+            <span className="pw-count">{fmtCountdown(pt.secondsLeft)}</span>
+          </div>
+          <div className="pw-row">
+            {FIVE.map((k) => {
+              const Icon = PRAYER_ICONS[k];
+              return (
+                <span key={k} className={`pw-chip ${k === pt.next.key ? 'next' : ''}`}>
+                  <Icon size={15} />
+                  <small>{t(k.toLowerCase())}</small>
+                  <b>{pt.today.timings[k]}</b>
+                </span>
+              );
+            })}
+          </div>
+        </>
+      ) : (
+        <div className="skeleton pw-skel" />
+      )}
+    </Link>
+  );
+}
+
+/** Carte « adhkar du moment » (matin ou soir) avec la progression du jour. */
+function AdhkarWidget() {
+  const t = useT();
+  const kind = defaultAdhkarKind();
+  const list = kind === 'morning' ? MORNING : EVENING;
+  const counts = loadProgress(kind);
+  const done = list.filter((d) => (counts[d.id] || 0) >= d.count).length;
+  const Icon = kind === 'morning' ? IconSun : IconMoon;
+  return (
+    <Link to={`/adhkar/${kind}`} className={`today-card adhkar-widget glass ${kind}`} data-aos="fade-up" data-aos-delay="80">
+      <div className="today-head">
+        <span className="today-ico gold-tone"><Icon size={18} /></span>
+        <div className="today-title">
+          <b>{kind === 'morning' ? t('morningAdhkar') : t('eveningAdhkar')}</b>
+          <small>{t('adhkarNow')}</small>
+        </div>
+        <IconArrow size={16} className="flip-rtl today-arrow" />
+      </div>
+      <div className="aw-main">
+        <div className="aw-left">
+          <span className="aw-num" dir="ltr">{done}<small>/{list.length}</small></span>
+          <small className="muted">{kind === 'morning' ? t('morningHint') : t('eveningHint')}</small>
+        </div>
+        <span className="btn btn-primary aw-btn">{done ? t('continueAdhkar') : t('start')}</span>
+      </div>
+      <div className="bar"><span style={{ width: `${(done / list.length) * 100}%` }} /></div>
+    </Link>
   );
 }
 

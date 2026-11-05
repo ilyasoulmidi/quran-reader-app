@@ -3,10 +3,11 @@ import quran from './quranSlice';
 import radio from './radioSlice';
 import player from './playerSlice';
 import ui from './uiSlice';
+import prayer from './prayerSlice';
 import { save } from '../storage';
 
 export const store = configureStore({
-  reducer: { quran, radio, player, ui },
+  reducer: { quran, radio, player, ui, prayer },
 });
 
 // Sauvegarde des préférences (uniquement quand elles changent).
@@ -24,6 +25,9 @@ store.subscribe(() => {
     lastSurah: s.player.lastSurah,
     theme: s.ui.theme,
     lang: s.ui.lang,
+    prayerLocation: s.prayer.location,
+    prayerTz: s.prayer.tz,
+    prayerOffset: s.prayer.offset,
   };
   Object.keys(next).forEach((k) => {
     if (next[k] !== prev[k]) save(k, next[k]);

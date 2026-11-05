@@ -6,6 +6,7 @@ import { fetchRadios, toggleFavRadio } from '../store/radioSlice';
 import { togglePlay } from '../store/playerSlice';
 import { playRadio, skip } from '../store/thunks';
 import { ErrorBox, Skeleton } from '../components/Loader';
+import ListenTabs from '../components/ListenTabs';
 import { Equalizer, IconHeart, IconHeartFill, IconNext, IconPause, IconPlay, IconPrev, IconRadio, IconSearch } from '../components/Icons';
 
 const cleanName = (n) => n.replace(/^(إذاعة|اذاعة|Radio)\s*/i, '');
@@ -29,6 +30,7 @@ export default function Radio() {
 
   return (
     <div className="page container">
+      <ListenTabs />
       <motion.section className="radio-hero glass" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
         <div className={`radio-orb ${current && isPlaying ? 'playing' : ''}`}>
           <span className="ring r1" />

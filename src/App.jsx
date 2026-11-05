@@ -9,6 +9,8 @@ import Home from './pages/Home';
 import Mushaf from './pages/Mushaf';
 import Radio from './pages/Radio';
 import Live from './pages/Live';
+import Prayer from './pages/Prayer';
+import Adhkar from './pages/Adhkar';
 import { fetchSuwar } from './store/quranSlice';
 import { fetchRadios } from './store/radioSlice';
 import { LANGS } from './i18n';
@@ -23,7 +25,7 @@ function AnimatedRoutes() {
   return (
     <AnimatePresence mode="wait">
       <motion.main
-        key={location.pathname.split('/')[1]}
+        key={['radio', 'live'].includes(location.pathname.split('/')[1]) ? 'listen' : location.pathname.split('/')[1]}
         className="main"
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
@@ -33,6 +35,8 @@ function AnimatedRoutes() {
         <Routes location={location}>
           <Route path="/" element={<Home />} />
           <Route path="/mushaf/:surahId?" element={<Mushaf />} />
+          <Route path="/prayer" element={<Prayer />} />
+          <Route path="/adhkar/:kind?" element={<Adhkar />} />
           <Route path="/radio" element={<Radio />} />
           <Route path="/live" element={<Live />} />
           <Route path="*" element={<Navigate to="/" replace />} />

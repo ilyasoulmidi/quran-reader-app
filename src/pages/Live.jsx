@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { useT } from '../i18n';
 import { YT_CHANNELS, ytEmbed, ytLivePage } from '../api';
 import { IconExternal, IconTv } from '../components/Icons';
+import ListenTabs from '../components/ListenTabs';
 
 export default function Live() {
   const t = useT();
@@ -12,6 +13,7 @@ export default function Live() {
 
   return (
     <div className="page container">
+      <ListenTabs />
       <div className="section-head">
         <span className="eyebrow"><span className="live-dot" /> {t('liveBadge')}</span>
         <h1 className="gradient-text">{t('live')}</h1>

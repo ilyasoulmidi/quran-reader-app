@@ -54,6 +54,17 @@ export const IconExternal = make(<><path d="M14 4h6v6M20 4l-9 9" /><path d="M18 
 export const IconArrow = make(<path d="M5 12h14M13 6l6 6-6 6" />);
 export const IconLayers = make(<><path d="m12 3 9 5-9 5-9-5 9-5Z" /><path d="m3 13 9 5 9-5" /></>);
 
+export const IconPin = make(<><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21Z" /><circle cx="12" cy="9.5" r="2.5" /></>);
+export const IconDawn = make(<><path d="M3 18h18M6 18a6 6 0 0 1 12 0" /><path d="M5 21h14" /><path d="M18 4.5l.6 1.4 1.4.6-1.4.6-.6 1.4-.6-1.4-1.4-.6 1.4-.6Z" /></>);
+export const IconSunrise = make(<><path d="M3 18h18M7 18a5 5 0 0 1 10 0" /><path d="M12 2v6M9 5l3-3 3 3" /><path d="M4.2 11.2l1.4 1.4M19.8 11.2l-1.4 1.4M5 21h14" /></>);
+export const IconSunset = make(<><path d="M3 18h18M7 18a5 5 0 0 1 10 0" /><path d="M12 9V3M9 6l3 3 3-3" /><path d="M4.2 11.2l1.4 1.4M19.8 11.2l-1.4 1.4M5 21h14" /></>);
+export const IconSunLow = make(<><circle cx="12" cy="13" r="4" /><path d="M12 5v1.5M5 13H3.5M20.5 13H19M6.3 7.3l1.1 1.1M17.7 7.3l-1.1 1.1" /><path d="M3 20h18" /></>);
+export const IconPlus = make(<path d="M12 5v14M5 12h14" />);
+export const IconMinus = make(<path d="M5 12h14" />);
+export const IconRotate = make(<><path d="M3 12a9 9 0 1 0 3-6.7L3 8" /><path d="M3 3v5h5" /></>);
+export const IconBeads = make(<><circle cx="12" cy="4.5" r="2" /><circle cx="6.7" cy="7" r="2" /><circle cx="17.3" cy="7" r="2" /><circle cx="5" cy="12.5" r="2" /><circle cx="19" cy="12.5" r="2" /><circle cx="7.5" cy="17.5" r="2" /><circle cx="16.5" cy="17.5" r="2" /><path d="M12 19.5v2.5" /></>);
+export const IconMosque = make(<><path d="M4 21V11M20 21V11M3 11h2M19 11h2M4 8.5 4 6M20 8.5 20 6" /><path d="M7 21v-6a5 5 0 0 1 10 0v6" /><path d="M12 7v2.5M2 21h20" /></>);
+
 /** Étoile à huit branches (motif islamique) utilisée pour le logo et les numéros. */
 export function Star8({ size = 40, className = '', children }) {
   return (
